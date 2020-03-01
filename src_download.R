@@ -6,17 +6,29 @@ download_file <- function(baseurl, identifier) {
 }
 
 load_identifiers <- function(baseurl) {
-  table <- read.csv("Documents/R/identifiers.txt")
+  skip <- FALSE
+  table <- read.csv("Documents/R/modified_identifiers.txt")
   identifiers <- as.list(levels(table$identifiers))
   for(i in seq(length(identifiers))) {
-    if(i%%4 == 0) {
-      Sys.sleep(1)
+    # if(i%%4 == 0) {
+    #   Sys.sleep(1)
+    # }
+    if(identical(identifiers[[i]], "oai:arXiv.org:1302.3446")) {
+      break
     }
-    download_file(baseurl, gsub(".*:", "", identifiers[[i]]))
+    tryCatch(
+      download_file(baseurl, gsub(".*:", "", identifiers[[i]])),
+      error = function(e) {
+        skip = TRUE
+      }
+    )
+    if(skip) {
+      next
+    }
   }
 }
 
-baseurl <- "https://arxiv.org/e-print/"
+baseurl <- "https://export.arxiv.org/e-print/"
 
 load_identifiers(baseurl)
 
